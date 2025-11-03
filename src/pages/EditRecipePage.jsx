@@ -57,9 +57,9 @@ export default function EditRecipePage({ recipeId, onBack, onSuccess }) {
           let stepsArray = [''];
           if (recipe.steps && recipe.steps.length > 0) {
             stepsArray = recipe.steps.map(step => {
-              // If step is an object with a 'step' property, extract it
-              if (typeof step === 'object' && step.step) {
-                return step.step;
+              // Check for the correct property 'instruction'
+              if (typeof step === 'object' && step.instruction) {
+                return step.instruction;
               }
               // If step is already a string, use it
               return typeof step === 'string' ? step : '';
@@ -198,14 +198,7 @@ export default function EditRecipePage({ recipeId, onBack, onSuccess }) {
     // Validate steps
     const validSteps = steps.filter(step => {
       // Ensure step is a string before calling trim
-      if (typeof step === 'string') {
-        return step.trim();
-      }
-      // If step is an object, check if it has a 'step' property
-      if (typeof step === 'object' && step.step) {
-        return step.step.trim();
-      }
-      return false;
+      return typeof step === 'string' && step.trim();
     });
     if (validSteps.length === 0) {
       setError('Minimal harus ada 1 langkah');
@@ -242,26 +235,16 @@ export default function EditRecipePage({ recipeId, onBack, onSuccess }) {
         setUploading(false);
       } else if (!currentImageUrl && !imageFile) {
         // If original image was removed and no new image
-        updateData.image_url = '';
-      }
+      updateData.image_url = '';
+    } else {
+      // --- TAMBAHKAN BAGIAN INI ---
+      // // Case 3: User didn't change the image, keep the old one
+      updateData.image_url = currentImageUrl;
+    }
 
       // Step 2: Add other fields
       const validIngredients = ingredients.filter(ing => ing.name.trim() && ing.quantity.trim());
-      const validSteps = steps.filter(step => {
-        if (typeof step === 'string') {
-          return step.trim();
-        }
-        if (typeof step === 'object' && step.step) {
-          return step.step.trim();
-        }
-        return false;
-      }).map(step => {
-        // Convert to string if it's an object
-        if (typeof step === 'object' && step.step) {
-          return step.step;
-        }
-        return step;
-      });
+      const validSteps = steps.filter(step => typeof step === 'string' && step.trim());
 
       updateData.name = formData.name.trim();
       updateData.category = formData.category;

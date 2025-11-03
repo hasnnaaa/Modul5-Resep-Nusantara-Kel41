@@ -5,7 +5,7 @@ import { useReviews, useCreateReview } from '../../hooks/useReviews';
 import { useIsFavorited } from '../../hooks/useFavorites';
 import { getUserIdentifier } from '../../hooks/useFavorites';
 import { formatDate, getDifficultyColor, getStarRating } from '../../utils/helpers';
-import { ArrowLeft, Heart, Clock, Users, ChefHat, Star, Send, Edit, Trash2 } from 'lucide-react';
+import { ArrowLeft, Heart, Clock, Users, ChefHat, Star, Send, Edit, Trash2, Share2 } from 'lucide-react';
 import recipeService from '../../services/recipeService';
 import ConfirmModal from '../modals/ConfirmModal';
 import FavoriteButton from '../common/FavoriteButton';
@@ -45,6 +45,35 @@ export default function RecipeDetail({ recipeId, onBack, onEdit, category = 'mak
   };
 
   const colors = categoryColors[category] || categoryColors.makanan;
+
+  const handleShare = async () => {
+    if (!recipe) return;
+
+    const shareData = {
+      title: recipe.name,
+      text: `Coba resep lezat ini: ${recipe.name}`,
+      url: window.location.href, // Ini akan otomatis mengambil link Vercel saat di-hosting
+    };
+
+    if (navigator.share) {
+      // Gunakan Web Share API (prioritas utama, untuk HP)
+      try {
+        await navigator.share(shareData);
+        console.log('Resep berhasil dibagikan');
+      } catch (err) {
+        console.error('Error sharing:', err);
+      }
+    } else {
+      // Fallback: Salin ke Clipboard (untuk Desktop)
+      try {
+        await navigator.clipboard.writeText(shareData.url);
+        alert('Link resep berhasil disalin ke clipboard!');
+      } catch (err) {
+        console.error('Error copying to clipboard:', err);
+        alert('Gagal menyalin link.');
+      }
+    }
+  };
 
   const handleSubmitReview = async (e) => {
     e.preventDefault();
@@ -167,29 +196,43 @@ export default function RecipeDetail({ recipeId, onBack, onEdit, category = 'mak
           </button>
 
           {/* Action Buttons */}
-          {onEdit && (
-            <div className="flex gap-2">
-              <button
-                onClick={() => {
-                  console.log('🖱️ Edit button clicked in RecipeDetail');
-                  console.log('📝 Recipe ID:', recipeId);
-                  console.log('🔧 onEdit function:', onEdit);
-                  onEdit(recipeId);
-                }}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <Edit className="w-4 h-4" />
-                <span className="hidden md:inline">Edit</span>
-              </button>
-              <button
-                onClick={() => setShowDeleteModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-              >
-                <Trash2 className="w-4 h-4" />
-                <span className="hidden md:inline">Hapus</span>
-              </button>
-            </div>
-          )}
+          <div className="flex gap-2">
+            
+            {/* --- TOMBOL SHARE BARU --- */}
+            <button
+              onClick={handleShare}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              title="Bagikan resep"
+            >
+              <Share2 className="w-4 h-4" />
+              <span className="hidden md:inline">Bagikan</span>
+            </button>
+            {/* --- BATAS TOMBOL SHARE BARU --- */}
+
+            {onEdit && (
+              <>
+                <button
+                  onClick={() => {
+                    console.log('🖱️ Edit button clicked in RecipeDetail');
+                    console.log('📝 Recipe ID:', recipeId);
+                    console.log('🔧 onEdit function:', onEdit);
+                    onEdit(recipeId);
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <Edit className="w-4 h-4" />
+                  <span className="hidden md:inline">Edit</span>
+                </button>
+                <button
+                  onClick={() => setShowDeleteModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span className="hidden md:inline">Hapus</span>
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
