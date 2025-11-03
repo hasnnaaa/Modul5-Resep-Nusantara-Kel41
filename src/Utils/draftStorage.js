@@ -1,5 +1,4 @@
 // src/utils/draftStorage.js
-
 const DRAFT_KEY_PREFIX = 'recipe_draft_';
 const DRAFT_TIMESTAMP_KEY = 'recipe_draft_timestamp';
 
